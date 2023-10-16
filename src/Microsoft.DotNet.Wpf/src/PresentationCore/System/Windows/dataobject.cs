@@ -12,6 +12,7 @@
 //
 
 
+
 namespace System.Windows
 {
     using System;
@@ -3146,8 +3147,19 @@ namespace System.Windows
                     // {
                     //     value = null;
                     // }
-                    BinaryReader Br = new BinaryReader(stream, Encoding.UTF8, leaveOpen: true);
-                    value = Br.ReadString();
+
+                    long startPosition = stream.Position;
+                    try
+                    {
+                        if (new BinaryFormattedObject(stream, leaveOpen: true).TryGetFrameworkObject(out object val))
+                        {
+                            return val;
+                        }
+                    }
+                    catch  
+                    {
+                        // Couldn't parse for some reason, let the BinaryFormatter try to handle it.
+                    }
                 }
                 else
                 {
