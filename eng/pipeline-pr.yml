@@ -88,7 +88,6 @@ jobs:
           - name: _InternalRuntimeDownloadArgs
             value: ''
         - ${{ if eq(variables['System.TeamProject'], 'internal') }}:
-          - group: DotNetBuilds storage account read tokens
           - group: AzureDevOps-Artifact-Feeds-Pats
           - name: _InternalRuntimeDownloadArgs
             value: >-
@@ -100,7 +99,7 @@ jobs:
         - ${{ if eq(parameters.runAsPublic, 'false') }}:
           # note: You have to use list syntax here (- name: value) or you will get errors about declaring the same variable multiple times
           - name: _SignType
-            value: real
+            value: test
           - group: DotNet-HelixApi-Access
 
           # note: Even though they are referenced here, user defined variables (like $(_SignType)) are not resolved 
@@ -183,13 +182,6 @@ jobs:
         #   (!_HelixPipeline) ||
         #   (_HelixPipeline && _PublicBuildPipeline && _ContinuousIntegrationTestsEnabled && _BuildConfig == Release)
         condition: or(ne(variables['_HelixPipeline'], 'true'), and(eq(variables['_HelixPipeline'], 'true') ,eq(variables['_BuildConfig'], 'Release'), eq(variables['_PublicBuildPipeline'], 'true'), eq(variables['_ContinuousIntegrationTestsEnabled'], 'true')))
-
-      - task: PowerShell@2
-        displayName: Replace WPF binaries
-        inputs:
-          targetType: 'inline'
-          script: '.\eng\copy-wpf.ps1 -testhost -destination .dotnet -$(_BuildConfig) -arch $(_Platform)'
-        condition: and(eq(variables['System.TeamProject'], 'public'), ne(variables['_Platform'], 'arm64'))
         
       - script: eng\scripts\ciunittest.cmd
           -configuration $(_BuildConfig) 
@@ -240,6 +232,12 @@ jobs:
           arguments: -InstallDir $(_programfilesx86) -Architecture $(_Platform) -Runtime windowsdesktop  -Channel 8.0 -Quality daily
         condition: eq(variables['_Platform'], 'x86')  
 
+      - task: PowerShell@2
+        displayName: Replace WPF binaries
+        inputs:
+          targetType: 'inline'
+          script: '.\eng\copy-wpf.ps1 -testhost -destination .dotnet -$(_BuildConfig) -arch $(_Platform)'
+        condition: and(eq(variables['System.TeamProject'], 'public'), ne(variables['_Platform'], 'arm64'))
 
       - task: DownloadPipelineArtifact@2
         displayName: Fetch Test Binaries

@@ -163,7 +163,6 @@ jobs:
           targetType: 'inline'
           script: '.\eng\copy-wpf.ps1 -testhost -destination .dotnet -$(_BuildConfig) -arch $(_Platform)'
         condition: and(eq(variables['System.TeamProject'], 'public'), ne(variables['_Platform'], 'arm64'))
-
       - script: eng\scripts\ciunittest.cmd
           -configuration $(_BuildConfig) 
           -prepareMachine
@@ -206,8 +205,7 @@ jobs:
         inputs:
           filePath: $(Build.SourcesDirectory)/dotnet-test-install.ps1
           arguments: -InstallDir $(_programfilesx86) -Architecture $(_Platform) -Runtime windowsdesktop  -Channel 8.0 -Quality daily
-        condition: eq(variables['_Platform'], 'x86')  
-
+        condition: eq(variables['_Platform'], 'x86')
       - task: DownloadPipelineArtifact@2
         displayName: Fetch Test Binaries
         inputs:
